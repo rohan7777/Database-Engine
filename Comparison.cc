@@ -62,6 +62,21 @@ void Comparison :: Print () {
 		cout << "(String)";
 }
 
+void Comparison :: Print (Schema sch) {   //marker move over
+
+    cout << sch.GetAtts()[whichAtt1].name;
+
+    if (op == LessThan)
+        cout << " < ";
+    else if (op == GreaterThan)
+        cout << " > ";
+    else
+        cout << " = ";
+
+    cout  << sch.GetAtts()[whichAtt2].name ;
+
+}
+
 
 
 
@@ -104,17 +119,17 @@ OrderMaker :: OrderMaker(Schema *schema) {
 
 
 void OrderMaker :: Print () {
-	printf("NumAtts = %5d\n", numAtts);
-	for (int i = 0; i < numAtts; i++)
-	{
-		printf("%3d: %5d ", i, whichAtts[i]);
-		if (whichTypes[i] == Int)
-			printf("Int\n");
-		else if (whichTypes[i] == Double)
-			printf("Double\n");
-		else
-			printf("String\n");
-	}
+    printf("  Number of attributes = %5d\n", numAtts); //marker
+    for (int i = 0; i < numAtts; i++)   //debug
+    {
+        printf("  %3d: attibute position = %5d ", i, whichAtts[i]);
+        if (whichTypes[i] == Int)
+            printf("  Data type = Int\n");
+        else if (whichTypes[i] == Double)
+            printf("  Data type = Double\n");
+        else
+            printf("  Data type = String\n");
+    }
 }
 
 
@@ -193,6 +208,24 @@ void CNF :: Print () {
 		else
 			cout << "\n";
 	}
+}
+
+void CNF :: Print (Schema sch) {    //move over marker
+
+    for (int i = 0; i < numAnds; i++) {
+
+        cout << "( ";
+        for (int j = 0; j < orLens[i]; j++) {
+            orList[i][j].Print (sch);
+            if (j < orLens[i] - 1)
+                cout << " OR ";
+        }
+        cout << ") ";
+        if (i < numAnds - 1)
+            cout << " AND\n";
+        else
+            cout << "\n";
+    }
 }
 
 // this is a helper routine that writes out another field for the literal record and its schema

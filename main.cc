@@ -92,7 +92,7 @@ public:
 		cout << "Output Schema : " << endl;
 		sch.Print ();
 		cout << "Join CNF : " << endl;
-		cnf.Print ();
+		cnf.Print (sch);
 		cout << "*********************" << endl;
 	}
 };
@@ -145,7 +145,7 @@ public:
 		cout << "Output Schema:" << endl;
 		sch.Print ();
 		cout << "Select CNF:" << endl;
-		cnf.Print ();
+		cnf.Print (sch);
 		cout << "*********************" << endl;
 	}
 };
@@ -171,7 +171,7 @@ public:
 		cout << "Output Schema:" << endl;
 		sch.Print ();
 		cout << "Select CNF:" << endl;
-		cnf.Print ();
+		cnf.Print (sch);
 		cout << "*********************" << endl;
 	}
 };
@@ -494,17 +494,17 @@ int main () {
 	
 	int minCost = INT_MAX, cost = 0;
 	int counter = 1;
-    cout << "heoalskdfj\n";
-	do {
+  //  cout << "heoalskdfj\n";
+	/*do {
 		Statistics temp (s);
 		auto iter = tableNames.begin ();
 		buffer[0] = *iter;
 		
-//		cout << *iter << " ";
+
 		iter++;     // Why this one extra ++ though??? question marker
 		
 		while (iter != tableNames.end ()) {
-//			cout << *iter << " ";
+
 			buffer[1] = *iter;
 			cost += temp.Estimate (boolean, &buffer[0], 2);
 			temp.Apply (boolean, &buffer[0], 2);
@@ -514,74 +514,25 @@ int main () {
 			}
 			iter++;
 		}
-//		cout << endl << cost << endl;
-//		cout << counter++ << endl << endl;
-		
+
 		if (cost >= 0 && cost < minCost) {
 			minCost = cost;
 			joinOrder = tableNames;
 		}
-/*
-		char fileName[10];
-		sprintf (fileName, "t%d.txt", counter - 1);
-		temp.Write (fileName);
-*/
 
 		cost = 0;
-	} while (next_permutation (tableNames.begin (), tableNames.end ()));
+	} while (next_permutation (tableNames.begin (), tableNames.end ()));*/
 	
-//	cout << minCost << endl;
-	
+
 	QueryNode *root;
 	
 	auto iter = joinOrder.begin ();
-
-
-
-
 	SelectFileNode *selectFileNode = new SelectFileNode ();
-	
-//	char filepath[32] = "/home/rohan/DBI/1GBbin/";
-//    char *filepath;
-//	filepath = "/home/rohan/DBI/1GBbin/";
-
-/********************//*
-
-   */
-/* for(auto i = joinOrder.begin(); i != joinOrder.end(); i++){
-        char* c = i[0];
-        while (*c != '\0'){
-            cout << *c ;
-        }
-        cout << " ";
-    }*//*
-
-    */
-/********************/
-
-
-
-//    cout << "\n\nFilepath value is : " << filepath;
-//	sprintf (filepath, "%s.bin",aliaseMap[*iter]);      //Marker removed comment
-
-
-// Need to check this select file opening logic,
-// especially where exactly it needs to be opened, as the open statements are at so many places and are commented
-// need to figure where are they supposed to be and where not.
-
-
-//	selectFileNode->file.Open (filepath);       //Marker removed comment
 	selectFileNode->opened = true;
 	selectFileNode->pid = getPid ();
 
-//    cout << "\n Before iter print\n size of joinOrder.begin () "<<joinOrder.size ();
-//    cout << "\n\n tableNames.size() is: " << tableNames.size();
-//    cout << "\n\n iter value is: " << *iter;
-
-
 	selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
 	selectFileNode->sch.Reseat (*iter);
-	
 	selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
 	
 	iter++;
@@ -595,10 +546,6 @@ int main () {
 		joinNode->left = selectFileNode;
 		
 		selectFileNode = new SelectFileNode ();
-		
-//		sprintf (filepath, "%s.bin", aliaseMap[*iter]);    //Marker removed comment
-		
-//		selectFileNode->file.Open (filepath);               //Marker removed comment
 		selectFileNode->opened = true;
 		selectFileNode->pid = getPid ();
 		selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
@@ -617,9 +564,6 @@ int main () {
 			JoinNode *p = joinNode;
 			
 			selectFileNode = new SelectFileNode ();
-			
-//			sprintf (filepath, "bin/%s.bin", (aliaseMap[*iter]));
-//			selectFileNode->file.Open (filepath);
 			selectFileNode->opened = true;
 			selectFileNode->pid = getPid ();
 			selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
@@ -656,7 +600,6 @@ int main () {
 		CopyNameList (groupingAtts, groupAtts);
 		root->pid = getPid ();
 		((GroupByNode *) root)->compute.GrowFromParseTree (finalFunction, temp->sch);
-//		root->sch.GroupBySchema (temp->sch, ((GroupByNode *) root)->compute.ReturnInt ());  //marker
         root->sch.GroupBySchema (temp->sch, ((GroupByNode *) root)->compute.getReturnsInt());
 		((GroupByNode *) root)->group.growFromParseTree (groupingAtts, &(root->sch));
 		((GroupByNode *) root)->from = temp;
@@ -666,7 +609,6 @@ int main () {
 		root->pid = getPid ();
 		((SumNode *) root)->compute.GrowFromParseTree (finalFunction, temp->sch);
 		Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
-//		root->sch = Schema (NULL, 1, ((SumNode *) root)->compute.ReturnInt () ? atts[0] : atts[1]);     //marker
         root->sch = Schema (NULL, 1, ((SumNode *) root)->compute.getReturnsInt() ? atts[0] : atts[1]);
 		((SumNode *) root)->from = temp;
 		
