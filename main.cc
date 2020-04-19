@@ -1,3 +1,4 @@
+
 #include <map>
 #include <vector>
 #include <string>
@@ -520,11 +521,12 @@ int main () {
 			minCost = cost;
 			joinOrder = tableNames;
 		}
-/*		
+/*
 		char fileName[10];
 		sprintf (fileName, "t%d.txt", counter - 1);
 		temp.Write (fileName);
-*/		
+*/
+
 		cost = 0;
 	} while (next_permutation (tableNames.begin (), tableNames.end ()));
 	
@@ -542,15 +544,21 @@ int main () {
 //	char filepath[32] = "/home/rohan/DBI/1GBbin/";
 //    char *filepath;
 //	filepath = "/home/rohan/DBI/1GBbin/";
-	/********************/
-   /* for(auto i = joinOrder.begin(); i != joinOrder.end(); i++){
+
+/********************//*
+
+   */
+/* for(auto i = joinOrder.begin(); i != joinOrder.end(); i++){
         char* c = i[0];
         while (*c != '\0'){
             cout << *c ;
         }
         cout << " ";
-    }*/
-    /********************/
+    }*//*
+
+    */
+/********************/
+
 
 
 //    cout << "\n\nFilepath value is : " << filepath;

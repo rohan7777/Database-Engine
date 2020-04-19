@@ -48,5 +48,6 @@ public:
 	int getReturnsInt(){
 	    return returnsInt;
 	}
+
 };
 #endif
