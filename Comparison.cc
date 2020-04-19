@@ -75,6 +75,7 @@ void Comparison :: Print (Schema sch) {   //marker move over
 
     cout  << sch.GetAtts()[whichAtt2].name ;
 
+
 }
 
 

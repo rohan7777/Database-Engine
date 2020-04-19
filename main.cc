@@ -66,7 +66,7 @@ public:
 	QueryNode (NodeType type) : t (type) {}
 	~QueryNode () {}
 	virtual void Print () {};
-};
+}*root;
 
 class JoinNode : public QueryNode {
 public:
@@ -453,6 +453,87 @@ void PrintFunction (FuncOperator *func) {
 	}
 }
 
+void getJoinOrder (vector<char *> &tableNames, vector<char *> &joinOrder, Statistics &s){
+
+    int minCost = INT_MAX, cost = 0;
+    vector<char *> buffer (2);
+
+    do {
+        Statistics temp (s);
+        auto iter = tableNames.begin ();
+        buffer[0] = *iter;
+
+
+        iter++;     // Why this one extra ++ though??? question marker
+
+        while (iter != tableNames.end ()) {
+
+            buffer[1] = *iter;
+            cost += temp.Estimate (boolean, &buffer[0], 2);
+            temp.Apply (boolean, &buffer[0], 2);
+
+            if (cost <= 0 || cost > minCost) {
+                break;
+            }
+            iter++;
+        }
+
+        if (cost >= 0 && cost < minCost) {
+            minCost = cost;
+            joinOrder = tableNames;
+        }
+
+        cost = 0;
+    } while (next_permutation (tableNames.begin (), tableNames.end ()));
+}
+
+template <typename T>
+void makeJoinNode(vector<char *> &joinOrder, T &iter, AliaseMap &aliaseMap, SchemaMap &schemaMap, SelectFileNode *selectFileNode ){
+
+    JoinNode *joinNode = new JoinNode ();
+
+    joinNode->pid = getPid ();
+    joinNode->left = selectFileNode;
+
+    selectFileNode = new SelectFileNode ();
+    selectFileNode->opened = true;
+    selectFileNode->pid = getPid ();
+    selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
+
+    selectFileNode->sch.Reseat (*iter);
+    selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
+
+    joinNode->right = selectFileNode;
+    joinNode->sch.JoinSchema (joinNode->left->sch, joinNode->right->sch);
+    joinNode->cnf.GrowFromParseTree (boolean, &(joinNode->left->sch), &(joinNode->right->sch), joinNode->literal);
+
+    iter++;
+
+    while (iter != joinOrder.end ()) {
+
+        JoinNode *p = joinNode;
+
+        selectFileNode = new SelectFileNode ();
+        selectFileNode->opened = true;
+        selectFileNode->pid = getPid ();
+        selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
+        selectFileNode->sch.Reseat (*iter);
+        selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
+
+        joinNode = new JoinNode ();
+
+        joinNode->pid = getPid ();
+        joinNode->left = p;
+        joinNode->right = selectFileNode;
+
+        joinNode->sch.JoinSchema (joinNode->left->sch, joinNode->right->sch);
+        joinNode->cnf.GrowFromParseTree (boolean, &(joinNode->left->sch), &(joinNode->right->sch), joinNode->literal);
+
+        iter++;
+    }
+    root = joinNode;
+}
+
 
 int main () {
 	
@@ -479,7 +560,7 @@ int main () {
 
 	vector<char *> tableNames;
 	vector<char *> joinOrder;
-	vector<char *> buffer (2);
+
 	
 	AliaseMap aliaseMap;
 	SchemaMap schemaMap;
@@ -491,40 +572,8 @@ int main () {
 	CopyTablesNamesAndAliases (tables, s, tableNames, aliaseMap);
 	
 	sort (tableNames.begin (), tableNames.end ());
-	
-	int minCost = INT_MAX, cost = 0;
-	int counter = 1;
-  //  cout << "heoalskdfj\n";
-	/*do {
-		Statistics temp (s);
-		auto iter = tableNames.begin ();
-		buffer[0] = *iter;
-		
 
-		iter++;     // Why this one extra ++ though??? question marker
-		
-		while (iter != tableNames.end ()) {
-
-			buffer[1] = *iter;
-			cost += temp.Estimate (boolean, &buffer[0], 2);
-			temp.Apply (boolean, &buffer[0], 2);
-			
-			if (cost <= 0 || cost > minCost) {
-				break;
-			}
-			iter++;
-		}
-
-		if (cost >= 0 && cost < minCost) {
-			minCost = cost;
-			joinOrder = tableNames;
-		}
-
-		cost = 0;
-	} while (next_permutation (tableNames.begin (), tableNames.end ()));*/
-	
-
-	QueryNode *root;
+	getJoinOrder(tableNames, joinOrder, s);
 	
 	auto iter = joinOrder.begin ();
 	SelectFileNode *selectFileNode = new SelectFileNode ();
@@ -539,49 +588,7 @@ int main () {
 	if (iter == joinOrder.end ()) {
 		root = selectFileNode;
 	} else {
-		
-		JoinNode *joinNode = new JoinNode ();
-		
-		joinNode->pid = getPid ();
-		joinNode->left = selectFileNode;
-		
-		selectFileNode = new SelectFileNode ();
-		selectFileNode->opened = true;
-		selectFileNode->pid = getPid ();
-		selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
-		
-		selectFileNode->sch.Reseat (*iter);
-		selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
-		
-		joinNode->right = selectFileNode;
-		joinNode->sch.JoinSchema (joinNode->left->sch, joinNode->right->sch);
-		joinNode->cnf.GrowFromParseTree (boolean, &(joinNode->left->sch), &(joinNode->right->sch), joinNode->literal);
-		
-		iter++;
-		
-		while (iter != joinOrder.end ()) {
-			
-			JoinNode *p = joinNode;
-			
-			selectFileNode = new SelectFileNode ();
-			selectFileNode->opened = true;
-			selectFileNode->pid = getPid ();
-			selectFileNode->sch = Schema (schemaMap[aliaseMap[*iter]]);
-			selectFileNode->sch.Reseat (*iter);
-			selectFileNode->cnf.GrowFromParseTree (boolean, &(selectFileNode->sch), selectFileNode->literal);
-			
-			joinNode = new JoinNode ();
-			
-			joinNode->pid = getPid ();
-			joinNode->left = p;
-			joinNode->right = selectFileNode;
-			
-			joinNode->sch.JoinSchema (joinNode->left->sch, joinNode->right->sch);
-			joinNode->cnf.GrowFromParseTree (boolean, &(joinNode->left->sch), &(joinNode->right->sch), joinNode->literal);
-			
-			iter++;
-		}
-		root = joinNode;
+        makeJoinNode(joinOrder, iter, aliaseMap, schemaMap, selectFileNode);
 	}
 	
 	QueryNode *temp = root;
