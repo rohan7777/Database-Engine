@@ -84,16 +84,15 @@ public:
 	void Print () {
         left->Print ();
         right->Print ();
-		cout << "*********************" << endl;
-		cout << "Join Operation" << endl;
+		cout << "\n*********************\n" << endl;
+		cout << "Join Operation\n" << endl;
 		cout << "Input Pipe 1 ID : " << left->pid << endl;
 		cout << "Input Pipe 2 ID : " << right->pid << endl;
-		cout << "Output Pipe ID : " << pid << endl;
-		cout << "Output Schema : " << endl;
+		cout << "\nOutput Pipe ID : " << pid << endl;
+		cout << "\nOutput Schema : " << endl;
 		sch.Print ();
-		cout << "Join CNF : " << endl;
+		cout << "\nJoin CNF : " << endl;
 		cnf.Print (sch);
-		cout << "*********************" << endl;
 	}
 };
 
@@ -110,17 +109,16 @@ public:
 	
 	void Print () {
         from->Print ();
-		cout << "*********************" << endl;
+		cout << "\n*********************\n" << endl;
 		cout << "Project Operation" << endl;
-		cout << "Input Pipe ID : " << from->pid << endl;
+		cout << "\nInput Pipe ID : " << from->pid << endl;
 		cout << "Output Pipe ID " << pid << endl;
-		cout << "Number Attrs Input : " << numIn << endl;
+		cout << "\nNumber Attrs Input : " << numIn << endl;
 		cout << "Number Attrs Output : " << numOut << endl;
-		cout << "Attrs To Keep :" << endl;
+		cout << "\nAttrs To Keep :" << endl;
 		for (int i = 0; i < numOut; i++) {
 			cout << attsToKeep[i] << endl;
 		}
-		cout << "*********************" << endl;
 	}
 };
 
@@ -139,14 +137,18 @@ public:
 	}
 	
 	void Print () {
-		cout << "*********************" << endl;
+		cout << "\n*********************\n" << endl;
 		cout << "Select File Operation" << endl;
-		cout << "Output Pipe ID " << pid << endl;
-		cout << "Output Schema:" << endl;
+		cout << "\nOutput Pipe ID: " << pid << endl;
+		cout << "\nOutput Schema:" << endl;
 		sch.Print ();
-		cout << "Select CNF:" << endl;
-		cnf.Print (sch);
-		cout << "*********************" << endl;
+        cout << "\nSelect CNF:" << endl;
+		if(cnf.getNumAnds() > 0){
+            cnf.Print (sch, literal);
+		}
+		else{
+		    cout << "  No selection predicate provided.\n";
+		}
 	}
 };
 
@@ -164,15 +166,19 @@ public:
 	
 	void Print () {
         from->Print ();
-		cout << "*********************" << endl;
+		cout << "\n*********************\n" << endl;
 		cout << "Select Pipe Operation" << endl;
-		cout << "Input Pipe ID : " << from->pid << endl;
+		cout << "\nInput Pipe ID : " << from->pid << endl;
 		cout << "Output Pipe ID : " << pid << endl;
-		cout << "Output Schema:" << endl;
+		cout << "\nOutput Schema:" << endl;
 		sch.Print ();
-		cout << "Select CNF:" << endl;
-		cnf.Print (sch);
-		cout << "*********************" << endl;
+        cout << "\nSelect CNF:" << endl;
+        if(cnf.getNumAnds() > 0){
+            cnf.Print (sch, literal);
+        }
+        else{
+            cout << "  No selection predicate provided.\n";
+        }
 	}
 };
 
@@ -190,13 +196,12 @@ public:
 	
 	void Print () {
         from->Print ();
-		cout << "*********************" << endl;
+		cout << "\n*********************\n" << endl;
 		cout << "Sum Operation" << endl;
-		cout << "Input Pipe ID : " << from->pid << endl;
+		cout << "\nInput Pipe ID : " << from->pid << endl;
 		cout << "Output Pipe ID : " << pid << endl;
-		cout << "Function :" << endl;
+		cout << "\nFunction :" << endl;
 		compute.Print ();
-		cout << "*********************" << endl;
 	}
 };
 
@@ -210,11 +215,10 @@ public:
 	}
 	void Print () {
         from->Print ();
-		cout << "*********************" << endl;
+		cout << "\n*********************\n" << endl;
 		cout << "Duplication Elimation Operation" << endl;
-		cout << "Input Pipe ID : " << from->pid << endl;
+		cout << "\nInput Pipe ID : " << from->pid << endl;
 		cout << "Output Pipe ID : " << pid << endl;
-		cout << "*********************" << endl;
 	}
 };
 
@@ -230,17 +234,16 @@ public:
 	
 	void Print () {
         from->Print ();
-		cout << "*********************" << endl;
+		cout << "\n*********************\n" << endl;
 		cout << "Group By Operation" << endl;
-		cout << "Input Pipe ID : " << from->pid << endl;
+		cout << "\nInput Pipe ID : " << from->pid << endl;
 		cout << "Output Pipe ID : " << pid << endl;
-		cout << "Output Schema : " << endl;
+		cout << "\nOutput Schema : " << endl;
 		sch.Print ();
-		cout << "Function : " << endl;
+		cout << "\nFunction : " << endl;
 		compute.Print ();
-		cout << "OrderMaker : " << endl;
+		cout << "\nOrderMaker : " << endl;
 		group.Print ();
-		cout << "*********************" << endl;
 	}
 };
 
@@ -256,9 +259,9 @@ public:
 	
 	void Print () {
         from->Print ();
-		cout << "*********************" << endl;
+		cout << "\n*********************\n" << endl;
 		cout << "Write Out Operation" << endl;
-		cout << "Input Pipe ID : " << from->pid << endl;
+		cout << "\nInput Pipe ID : " << from->pid << endl;
 		cout << "*********************" << endl;
 	}
 };
@@ -540,22 +543,22 @@ int main () {
 	cout << "Input :" << endl;;
 	yyparse ();
 
-	cout << endl << "Print Boolean :" << endl;
+	/*cout << endl << "Print Boolean :" << endl;
 	PrintParseTree (boolean);
-	
+
 	cout << endl << "Print TableList :" << endl;
 	PrintTablesAliases (tables);
-	
+
 	cout << endl << "Print NameList groupingAtts :" << endl;
 	PrintNameList (groupingAtts);
-	
+
 	cout << endl << "Print NameLis1t attsToSelect:" << endl;
 	PrintNameList (attsToSelect);
-	
+
 	cout << finalFunction << endl;
 	cout << endl << "Print Function:" << endl;
 	PrintFunction (finalFunction);
-
+*/
 	cout << endl;
 
 	vector<char *> tableNames;
@@ -633,8 +636,8 @@ int main () {
 		((ProjectNode *) root)->from = temp;
 	}
 	
-	cout << "Parse Tree : " << endl;
+	cout << "\n\nOperation Tree : " << endl;
 	root->Print ();
-	
-	return 0;
+    cout << "*********************" << endl;
+    return 0;
 }

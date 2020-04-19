@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 class Schema;
+class Record;
 
 // This stores an individual comparison that is part of a CNF
 class Comparison {
@@ -37,6 +38,8 @@ public:
 	void Print ();
 
     void Print (Schema);
+    void Print (Schema, Record&);
+    void printValue(int , Record &, Schema );
 };
 
 
@@ -69,7 +72,7 @@ public:
     void growFromParseTree(NameList* gAtts, Schema* inputSchema); // marker
 };
 
-class Record;
+
 
 // This structure stores a CNF expression that is to be evaluated
 // during query execution
@@ -97,17 +100,22 @@ public:
 	void Print ();
 
     void Print (Schema);
+    void Print (Schema, Record&);
 
-        // this takes a parse tree for a CNF and converts it into a 2-D
-        // matrix storing the same CNF expression.  This function is applicable
-        // specifically to the case where there are two relations involved
-        void GrowFromParseTree (struct AndList *parseTree, Schema *leftSchema, 
-		Schema *rightSchema, Record &literal);
+    // this takes a parse tree for a CNF and converts it into a 2-D
+    // matrix storing the same CNF expression.  This function is applicable
+    // specifically to the case where there are two relations involved
+    void GrowFromParseTree (struct AndList *parseTree, Schema *leftSchema,
+    Schema *rightSchema, Record &literal);
 
-        // version of the same function, except that it is used in the case of
-        // a relational selection over a single relation so only one schema is used
-        void GrowFromParseTree (struct AndList *parseTree, Schema *mySchema, 
-		Record &literal);
+    // version of the same function, except that it is used in the case of
+    // a relational selection over a single relation so only one schema is used
+    void GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
+    Record &literal);
+
+    int getNumAnds(){
+        return numAnds;
+    }
 
 };
 

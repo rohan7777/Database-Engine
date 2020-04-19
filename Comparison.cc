@@ -78,6 +78,58 @@ void Comparison :: Print (Schema sch) {   //marker move over
 
 }
 
+void Comparison :: printValue(int whichAtt2, Record &literal, Schema sch){
+    Type attype = sch.GetAtts()[whichAtt2].myType;
+    char *lit_bits = literal.GetBits();
+    char* val1 = lit_bits + ((int *) lit_bits)[whichAtt2 + 1];
+
+    if(attype == String){
+        cout << val1;
+    }
+    else{
+        double val2 = *((double *) val1);
+        cout << val2;
+    }
+
+
+    /*switch(attype){
+        case Int: {
+            double val2 = *((double *) val1);
+            cout << val2;
+            break;
+        }
+        case Double: {
+            double val2 = *((double *) val1);
+            cout << val2;
+            break;
+        }
+        default: {
+            cout << val1;
+        }
+    }*/
+}
+
+void Comparison :: Print (Schema sch, Record &literal) {   //marker move over
+
+    cout << sch.GetAtts()[whichAtt1].name;
+
+    if (op == LessThan)
+        cout << " < ";
+    else if (op == GreaterThan)
+        cout << " > ";
+    else
+        cout << " = ";
+
+    if(operand2 != Left && operand2 != Right){
+       printValue(whichAtt2, literal, sch);
+    }else{
+        cout  << sch.GetAtts()[whichAtt2].name ;
+    }
+
+}
+
+
+
 
 
 
@@ -218,6 +270,24 @@ void CNF :: Print (Schema sch) {    //move over marker
         cout << "( ";
         for (int j = 0; j < orLens[i]; j++) {
             orList[i][j].Print (sch);
+            if (j < orLens[i] - 1)
+                cout << " OR ";
+        }
+        cout << ") ";
+        if (i < numAnds - 1)
+            cout << " AND\n";
+        else
+            cout << "\n";
+    }
+}
+
+void CNF :: Print (Schema sch, Record &literal) {    //move over marker
+
+    for (int i = 0; i < numAnds; i++) {
+
+        cout << "( ";
+        for (int j = 0; j < orLens[i]; j++) {
+            orList[i][j].Print (sch, literal);
             if (j < orLens[i] - 1)
                 cout << " OR ";
         }
