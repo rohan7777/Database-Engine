@@ -17,15 +17,23 @@
 	struct AndList *boolean; // the predicate in the WHERE clause
 	struct NameList *groupingAtts; // grouping atts (NULL if no grouping)
 	struct NameList *attsToSelect; // the set of attributes in the SELECT (NULL if no such atts)
-	int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query
+	int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query 
 	int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
+	//add
+    std::string loadFileName; // save the insert file name
+    std::string tablename; // save the table to be inserted
+    std::string outputFile; // save filename of output, it could be none, string or stdout
+	struct AttrList *attrList;
+	struct NameList *sortList;
+    int sqlType;
+    int dbfileType;
 
 %}
 
 // this stores all of the types returned by production rules
 %union {
  	struct FuncOperand *myOperand;
-	struct FuncOperator *myOperator;
+	struct FuncOperator *myOperator; 
 	struct TableList *myTables;
 	struct ComparisonOp *myComparison;
 	struct Operand *myBoolOperand;
@@ -34,14 +42,32 @@
 	struct NameList *myNames;
 	char *actualChars;
 	char whichOne;
+	//add
+	struct AttrList *myAttrList;
+	struct NameList *mySortList;
 }
 
 %token <actualChars> Name
 %token <actualChars> Float
 %token <actualChars> Int
 %token <actualChars> String
+%token CREATE
+%token TABLE
+%token ON
+%token HEAP
+%token SORTED
+%token INSERT
+%token DROP
+%token SET
+%token OUTPUT
+%token STDOUT
+%token NONE
+%token UPDATE
+%token STATISTICS
+%token FOR
+%token INTO
 %token SELECT
-%token GROUP
+%token GROUP 
 %token DISTINCT
 %token BY
 %token FROM
@@ -55,12 +81,15 @@
 %type <myAndList> AndList
 %type <myOperand> SimpleExp
 %type <myOperator> CompoundExp
-%type <whichOne> Op
+%type <whichOne> Op 
 %type <myComparison> BoolComp
 %type <myComparison> Condition
 %type <myTables> Tables
 %type <myBoolOperand> Literal
 %type <myNames> Atts
+//add
+%type <myAttrList> AttrList;
+%type <mySortList> SortList;
 
 %start SQL
 
@@ -68,27 +97,113 @@
 //******************************************************************************
 // SECTION 3
 //******************************************************************************
-/* This is the PRODUCTION RULES section which defines how to "understand" the
- * input language and what action to take for each "statment"
+/* This is the PRODUCTION RULES section which defines how to "understand" the 
+ * input language and what action to take for each "statement"
  */
 
 %%
 
-SQL: SELECT WhatIWant FROM Tables WHERE AndList
+SQL: SELECT WhatIWant FROM Tables WHERE AndList ';'
 {
 	tables = $4;
-	boolean = $6;
+	boolean = $6;	
 	groupingAtts = NULL;
+    sqlType = 4;
 }
 
-| SELECT WhatIWant FROM Tables WHERE AndList GROUP BY Atts
+| SELECT WhatIWant FROM Tables WHERE AndList GROUP BY Atts ';'
 {
 	tables = $4;
-	boolean = $6;
+	boolean = $6;	
 	groupingAtts = $9;
+    sqlType = 4;
+}
+| CREATE TABLE Name '(' AttrList ')' AS HEAP ';'
+{
+	tablename = $3;
+	attrList = $5;
+    sqlType = 0;
+    dbfileType = 0;
+}
+| CREATE TABLE Name '(' AttrList ')' AS SORTED ON SortList ';'
+{
+	tablename = $3;
+	attrList = $5;
+	sortList = $10;
+    sqlType = 0;
+    dbfileType = 1;
+}
+| INSERT String INTO Name ';'
+{
+	loadFileName = $2;
+	tablename = $4;
+    sqlType = 1;
+}
+| DROP TABLE Name ';'
+{
+	tablename = $3;
+    sqlType = 2;
+}
+| SET OUTPUT String ';'
+{
+	outputFile = $3;
+    sqlType = 3;
+}
+| SET OUTPUT STDOUT ';'
+{
+	outputFile = "STDOUT";
+    sqlType = 3;
+}
+| SET OUTPUT NONE ';'
+{
+	outputFile = "NONE";
+    sqlType = 3;
+}
+| UPDATE STATISTICS FOR Tables ';'
+{
+	tables = $4;
+    sqlType = 5;
 };
 
-WhatIWant: Function ',' Atts
+AttrList: Name Name
+{
+	$$ = (struct AttrList *) malloc (sizeof (struct AttrList));
+	$$->name = $1;
+	if(strcmp($2,"INTEGER")==0)
+		$$->type = 0;
+	else if(strcmp($2,"DOUBLE")==0)
+		$$->type = 1;
+	else if(strcmp($2,"STRING")==0)
+		$$->type = 2;
+	$$->next = NULL;
+}
+| Name Name ',' AttrList
+{
+	$$ = (struct AttrList *) malloc (sizeof (struct AttrList));
+	$$->name = $1;
+	if(strcmp($2,"INTEGER")==0)
+		$$->type = 0;
+	else if(strcmp($2,"DOUBLE")==0)
+		$$->type = 1;
+	else if(strcmp($2,"STRING")==0)
+		$$->type = 2;
+	$$->next = $4;
+}
+
+SortList: Name
+{
+	$$ = (struct NameList *) malloc (sizeof (struct NameList));
+	$$->name = $1;
+	$$->next = NULL;
+}
+| Name ',' SortList
+{
+	$$ = (struct NameList *) malloc (sizeof (struct NameList));
+	$$->name = $1;
+	$$->next = $3;
+}
+
+WhatIWant: Function ',' Atts 
 {
 	attsToSelect = $3;
 	distinctAtts = 0;
@@ -99,7 +214,7 @@ WhatIWant: Function ',' Atts
 	attsToSelect = NULL;
 }
 
-| Atts
+| Atts 
 {
 	distinctAtts = 0;
 	finalFunction = NULL;
@@ -131,7 +246,7 @@ Atts: Name
 	$$ = (struct NameList *) malloc (sizeof (struct NameList));
 	$$->name = $1;
 	$$->next = NULL;
-}
+} 
 
 | Atts ',' Name
 {
@@ -140,7 +255,7 @@ Atts: Name
 	$$->next = $1;
 }
 
-Tables: Name AS Name
+Tables: Name AS Name 
 {
 	$$ = (struct TableList *) malloc (sizeof (struct TableList));
 	$$->tableName = $1;
@@ -160,24 +275,24 @@ Tables: Name AS Name
 
 CompoundExp: SimpleExp Op CompoundExp
 {
-	$$ = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));
+	$$ = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));	
 	$$->leftOperator = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));
 	$$->leftOperator->leftOperator = NULL;
 	$$->leftOperator->leftOperand = $1;
 	$$->leftOperator->right = NULL;
 	$$->leftOperand = NULL;
 	$$->right = $3;
-	$$->code = $2;
+	$$->code = $2;	
 
 }
 
 | '(' CompoundExp ')' Op CompoundExp
 {
-	$$ = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));
+	$$ = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));	
 	$$->leftOperator = $2;
 	$$->leftOperand = NULL;
 	$$->right = $5;
-	$$->code = $4;
+	$$->code = $4;	
 
 }
 
@@ -189,19 +304,19 @@ CompoundExp: SimpleExp Op CompoundExp
 
 | SimpleExp
 {
-	$$ = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));
+	$$ = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));	
 	$$->leftOperator = NULL;
 	$$->leftOperand = $1;
-	$$->right = NULL;
+	$$->right = NULL;	
 
 }
 
 | '-' CompoundExp
 {
-	$$ = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));
+	$$ = (struct FuncOperator *) malloc (sizeof (struct FuncOperator));	
 	$$->leftOperator = $2;
 	$$->leftOperand = NULL;
-	$$->right = NULL;
+	$$->right = NULL;	
 	$$->code = '-';
 
 }
@@ -333,7 +448,7 @@ Literal : String
 ;
 
 
-SimpleExp:
+SimpleExp: 
 
 Float
 {
@@ -341,7 +456,7 @@ Float
         $$ = (struct FuncOperand *) malloc (sizeof (struct FuncOperand));
         $$->code = DOUBLE;
         $$->value = $1;
-}
+} 
 
 | Int
 {
@@ -349,7 +464,7 @@ Float
         $$ = (struct FuncOperand *) malloc (sizeof (struct FuncOperand));
         $$->code = INT;
         $$->value = $1;
-}
+} 
 
 | Name
 {

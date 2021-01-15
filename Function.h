@@ -24,11 +24,14 @@ private:
 	Arithmatic *opList;
 	int numOps;
 
-	int returnsInt;
 
 public:
 
+    int returnsInt;
+
 	Function ();
+    
+    int getReturnsInt(){return returnsInt;}
 
 	// this grows the specified function from a parse tree and converts
 	// it into an accumulator-based computation over the attributes in
@@ -44,10 +47,5 @@ public:
 
 	// applies the function to the given record and returns the result
 	Type Apply (Record &toMe, int &intResult, double &doubleResult);
-
-	int getReturnsInt(){
-	    return returnsInt;
-	}
-
 };
 #endif

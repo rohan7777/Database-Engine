@@ -2,7 +2,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-
 #include "Comparison.h"
 
 
@@ -62,74 +61,6 @@ void Comparison :: Print () {
 		cout << "(String)";
 }
 
-void Comparison :: Print (Schema sch) {   //marker move over
-
-    cout << sch.GetAtts()[whichAtt1].name;
-
-    if (op == LessThan)
-        cout << " < ";
-    else if (op == GreaterThan)
-        cout << " > ";
-    else
-        cout << " = ";
-
-    cout  << sch.GetAtts()[whichAtt2].name ;
-
-
-}
-
-void Comparison :: printValue(int whichAtt2, Record &literal, Schema sch){
-    Type attype = sch.GetAtts()[whichAtt2].myType;
-    char *lit_bits = literal.GetBits();
-    char* val1 = lit_bits + ((int *) lit_bits)[whichAtt2 + 1];
-
-    if(attype == String){
-        cout << val1;
-    }
-    else{
-        double val2 = *((double *) val1);
-        cout << val2;
-    }
-
-
-    /*switch(attype){
-        case Int: {
-            double val2 = *((double *) val1);
-            cout << val2;
-            break;
-        }
-        case Double: {
-            double val2 = *((double *) val1);
-            cout << val2;
-            break;
-        }
-        default: {
-            cout << val1;
-        }
-    }*/
-}
-
-void Comparison :: Print (Schema sch, Record &literal) {   //marker move over
-
-    cout << sch.GetAtts()[whichAtt1].name;
-
-    if (op == LessThan)
-        cout << " < ";
-    else if (op == GreaterThan)
-        cout << " > ";
-    else
-        cout << " = ";
-
-    if(operand2 != Left && operand2 != Right){
-       printValue(whichAtt2, literal, sch);
-    }else{
-        cout  << sch.GetAtts()[whichAtt2].name ;
-    }
-
-}
-
-
-
 
 
 
@@ -172,7 +103,7 @@ OrderMaker :: OrderMaker(Schema *schema) {
 
 
 void OrderMaker :: Print () {
-    printf("  Number of attributes = %5d\n", numAtts); //marker
+    printf("  Number of attributes = %5d\n", numAtts);
     for (int i = 0; i < numAtts; i++)   //debug
     {
         printf("  %3d: attibute position = %5d ", i, whichAtts[i]);
@@ -210,7 +141,7 @@ int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 		// now verify that it operates over atts from both tables
 		if (!((orList[i][0].operand1 == Left && orList[i][0].operand2 == Right) ||
 		      (orList[i][0].operand2 == Left && orList[i][0].operand1 == Right))) {
-			//continue;		
+			continue;		
 		}
 
 		// since we are here, we have found a join attribute!!!
@@ -261,42 +192,6 @@ void CNF :: Print () {
 		else
 			cout << "\n";
 	}
-}
-
-void CNF :: Print (Schema sch) {    //move over marker
-
-    for (int i = 0; i < numAnds; i++) {
-
-        cout << "( ";
-        for (int j = 0; j < orLens[i]; j++) {
-            orList[i][j].Print (sch);
-            if (j < orLens[i] - 1)
-                cout << " OR ";
-        }
-        cout << ") ";
-        if (i < numAnds - 1)
-            cout << " AND\n";
-        else
-            cout << "\n";
-    }
-}
-
-void CNF :: Print (Schema sch, Record &literal) {    //move over marker
-
-    for (int i = 0; i < numAnds; i++) {
-
-        cout << "( ";
-        for (int j = 0; j < orLens[i]; j++) {
-            orList[i][j].Print (sch, literal);
-            if (j < orLens[i] - 1)
-                cout << " OR ";
-        }
-        cout << ") ";
-        if (i < numAnds - 1)
-            cout << " AND\n";
-        else
-            cout << "\n";
-    }
 }
 
 // this is a helper routine that writes out another field for the literal record and its schema
@@ -386,12 +281,14 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *leftSchema,
                                         typeLeft = rightSchema->FindType (myOr->left->left->value);
 
 				// it is not there!  So there is an error in the query
-                                } else {
-					/*cout << "ERROR: Could not find attribute " <<     //Big fucking marker
+                } else {
+                    /*
+					cout << "ERROR: Could not find attribute " <<
 						myOr->left->left->value << "\n";
-					exit (1);	*/
-                    whichAnd--;
-                    continue;
+					exit (1);
+                     */
+                    --whichAnd;
+                    break;
 				}
 
 			// the next thing is to see if we have a string; if so, add it to the 
@@ -444,11 +341,13 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *leftSchema,
 					typeRight = rightSchema->FindType (myOr->left->right->value);
 
 				// it is not there!  So there is an error in the query
-                                } else {
-					/*cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";   //Big fucking marker
-					exit (1);*/
-                    whichAnd--;
-                    continue;
+                } else {
+                    /*
+					cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";
+					exit (1);
+                     */
+                    --whichAnd;
+                    break;
 				}
 
 			// the next thing is to see if we have a string; if so, add it to the 
@@ -588,12 +487,14 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 					typeLeft = mySchema->FindType (myOr->left->left->value);
 
 				// it is not there!  So there is an error in the query
-                                } else {
-					/*cout << "ERROR: Could not find attribute " <<     //Big fucking marker
+                } else {
+                    /*
+					cout << "ERROR: Could not find attribute " <<
 						myOr->left->left->value << "\n";
-					exit (1);*/
-                    whichAnd--;
-                    continue;
+					exit (1);
+                     */
+                    --whichAnd;
+                    break;
 				}
 
 			// the next thing is to see if we have a string; if so, add it to the 
@@ -639,11 +540,13 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 					typeRight = mySchema->FindType (myOr->left->right->value);
 
 				// it is not there!  So there is an error in the query
-                                } else {
-					/*cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";       //Big fucking marker
-					exit (1);*/
-                    whichAnd--;
-                    continue;
+                } else {
+                    /*
+					cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";
+					exit (1);
+                     */
+                    --whichAnd;
+                    break;
 				}
 
 			// the next thing is to see if we have a string; if so, add it to the 
@@ -725,12 +628,117 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 	remove("hkljdfgkSDFSDF");
 }
 
-//marker below
+// Added print methods
+
+void Comparison :: Print (Schema sch, int offset) {
+
+    if(operand1 == Right){
+        cout << sch.GetAtts()[whichAtt1+offset].name;
+    }else{
+        cout << sch.GetAtts()[whichAtt1].name;
+    }
 
 
-void OrderMaker::growFromParseTree (NameList* gAtts, Schema* inputSchema) {
-    for(; gAtts; gAtts = gAtts->next, numAtts++) {
-        whichAtts[numAtts] = inputSchema->Find(gAtts->name);
-        whichTypes[numAtts] = inputSchema->FindType(gAtts->name);
+    if (op == LessThan)
+        cout << " < ";
+    else if (op == GreaterThan)
+        cout << " > ";
+    else
+        cout << " = ";
+
+    if(operand2 == Right){
+        cout  << sch.GetAtts()[whichAtt2+offset].name ;
+    }else{
+        cout  << sch.GetAtts()[whichAtt2].name ;
+    }
+
+}
+
+void CNF :: Print (Schema sch, int offset) {
+
+    for (int i = 0; i < numAnds; i++) {
+
+        cout << "( ";
+        for (int j = 0; j < orLens[i]; j++) {
+            orList[i][j].Print (sch, offset);
+            if (j < orLens[i] - 1)
+                cout << " OR ";
+        }
+        cout << ") ";
+        if (i < numAnds - 1)
+            cout << " AND\n";
+        else
+            cout << "\n";
     }
 }
+
+void Comparison :: printValue(int whichAtt2, Record &literal, Schema sch){
+    Type attype = sch.GetAtts()[whichAtt2+1].myType;
+    char *lit_bits = literal.GetBits();
+    char* val1 = lit_bits + ((int *) lit_bits)[whichAtt2 + 1];
+    double val2 = *((double *) val1);
+    int val3 = *((int *) val1);
+    string s(lit_bits + ((int *) lit_bits)[whichAtt2 + 1]);
+
+
+    if(s.size() == 0){
+        cout << val2;
+    }else{
+        if(val3 <100){
+            cout << val3;
+        }else{
+            cout<< val1;
+        }
+    }
+}
+
+void Comparison :: Print (Schema sch, Record &literal, int offset) {
+
+    if(operand1 == Right){
+        cout << sch.GetAtts()[whichAtt1+offset].name;
+    }else{
+        cout << sch.GetAtts()[whichAtt1].name;
+    }
+
+
+
+    if (op == LessThan)
+        cout << " < ";
+    else if (op == GreaterThan)
+        cout << " > ";
+    else
+        cout << " = ";
+
+    if(operand2 != Left && operand2 != Right){
+        printValue(whichAtt2, literal, sch);
+    }else if (operand2 == Right){
+        cout  << sch.GetAtts()[whichAtt2+offset].name ;
+    }else{
+        cout  << sch.GetAtts()[whichAtt2].name ;
+    }
+
+}
+
+
+void CNF :: Print (Schema sch, Record &literal, int offset) {
+
+    for (int i = 0; i < numAnds; i++) {
+
+        cout << "( ";
+        for (int j = 0; j < orLens[i]; j++) {
+            orList[i][j].Print (sch, literal, offset);
+            if (j < orLens[i] - 1)
+                cout << " OR ";
+        }
+        cout << ") ";
+        if (i < numAnds - 1)
+            cout << " AND\n";
+        else
+            cout << "\n";
+    }
+}
+
+
+
+
+

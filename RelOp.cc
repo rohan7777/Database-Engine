@@ -460,27 +460,27 @@ void DuplicateRemoval::Run(Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
 }
 
 void *DuplicateRemoval::startOperation(void *arg) {
-    DuplicateRemoval* duplicateRemoval = (DuplicateRemoval*)arg;
-    OrderMaker order = OrderMaker(duplicateRemoval->mySchema);
-    ComparisonEngine comparisonEngine;
-    Record tempRec;
+    DuplicateRemoval* dr = (DuplicateRemoval*)arg;
+    OrderMaker order = OrderMaker(dr->mySchema);
+    ComparisonEngine cmpEng;
+    Record tmpRec;
     Record nextRec;
-
+    
     Pipe pipe(200);
-    BigQ bigQ = BigQ(*(duplicateRemoval->inPipe), pipe, order, duplicateRemoval->n_pages);
-
-
-    if (pipe.Remove(&tempRec)) {
+    BigQ bigQ = BigQ(*(dr->inPipe), pipe, order, dr->n_pages);
+    
+    
+    if (pipe.Remove(&tmpRec)) {
         while (pipe.Remove(&nextRec)) {
-            if (comparisonEngine.Compare(&tempRec, &nextRec, &order)) {
-                duplicateRemoval->outPipe->Insert(&tempRec);
-                tempRec.Consume(&nextRec);
+            if (cmpEng.Compare(&tmpRec, &nextRec, &order)) {
+                dr->outPipe->Insert(&tmpRec);
+                tmpRec.Consume(&nextRec);
             }
         }
-        duplicateRemoval->outPipe->Insert(&tempRec);
+        dr->outPipe->Insert(&tmpRec);
     }
-
-    duplicateRemoval->outPipe->ShutDown();
+    
+    dr->outPipe->ShutDown();
     pthread_exit(NULL);
 }
 

@@ -1,18 +1,13 @@
 
-
 #ifndef SCHEMA_H
 #define SCHEMA_H
 
 #include <stdio.h>
-#include <vector>
-#include <string>
 #include "Record.h"
 #include "Schema.h"
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
-
-using namespace std;
 
 struct att_pair {
 	char *name;
@@ -53,33 +48,22 @@ public:
 	Type FindType (char *attName);
 
 	// this reads the specification for the schema in from a file
-	Schema (char *fName, char *relName);
+	Schema (const char *fName, const char *relName);
 
 	// this composes a schema instance in-memory
-	Schema (char *fName, int num_atts, Attribute *atts);
-
-    Schema (const Schema& s);   //marker
+	Schema (const char *fName, int num_atts, Attribute *atts);
 
 	// this constructs a sort order structure that can be used to
 	// place a lexicographic ordering on the records using this type of schema
 	int GetSortOrder (OrderMaker &order);
 
 	~Schema ();
+    
+    // add by me
+    void Print();
+    
+    Schema* Project(NameList* attsLeft, int* &keepMe);
 
-	//marker below
-    Schema ();
-
-    void Print ();
-
-    void GroupBySchema (Schema s, bool returnInt);
-
-    void ProjectSchema (Schema s, vector<string> names, vector<int> &attsToKeep);
-
-    void JoinSchema (Schema left, Schema right);
-
-    void Reseat (string prefix);
-
-    Schema& operator= (const Schema& s);
 };
 
 #endif

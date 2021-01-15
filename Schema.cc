@@ -1,4 +1,3 @@
-
 #include "Schema.h"
 #include <string.h>
 #include <stdio.h>
@@ -38,7 +37,7 @@ Attribute *Schema :: GetAtts () {
 }
 
 
-Schema :: Schema (char *fpath, int num_atts, Attribute *atts) {
+Schema :: Schema (const char *fpath, int num_atts, Attribute *atts) {
 	fileName = strdup (fpath);
 	numAtts = num_atts;
 	myAtts = new Attribute[numAtts];
@@ -61,7 +60,7 @@ Schema :: Schema (char *fpath, int num_atts, Attribute *atts) {
 	}
 }
 
-Schema :: Schema (char *fName, char *relName) {
+Schema :: Schema (const char *fName, const char *relName) {
 
 	FILE *foo = fopen (fName, "r");
 	
@@ -156,111 +155,49 @@ Schema :: Schema (char *fName, char *relName) {
 	fclose (foo);
 }
 
-Schema::Schema (const Schema& s) : fileName(0), myAtts(0) {     //marker
-    if (s.fileName) {
-        fileName = strdup(s.fileName);
-    }
-    numAtts = s.numAtts;
-    myAtts = new Attribute[numAtts];
-    for (int i = 0; i < numAtts; i++ ) {
-        myAtts[i] = s.myAtts[i];
-        myAtts[i].name = strdup(myAtts[i].name);
-    }
-}
-
 Schema :: ~Schema () {
 	delete [] myAtts;
 	myAtts = 0;
 }
 
-// marker below
-
-
 void Schema :: Print () {
-    string typeName;
     for (int i = 0; i < numAtts; i++) {
         switch (myAtts[i].myType) {
-            case Int :
-                typeName = string ("Int");
+            case 0: cout << myAtts[i].name << ": int ";
                 break;
-            case Double :
-                typeName = string ("Double");
+            case 1: cout << myAtts[i].name << ": double ";
                 break;
-            case String :
-                typeName = string ("String");
+            case 2: cout << myAtts[i].name << ": string ";
                 break;
-            default :// should never come here!!!!!
-                cout << "Wrong Type! " << myAtts[i].myType << endl;
+            default: {
+                cerr << "Error: Invalid data type." << endl;
+            }
         }
-        cout << myAtts[i].name << " : " <<  typeName << endl;
     }
+    cout << endl;
 }
 
-void Schema :: Reseat (string prefix) {
-    for (int i = 0; i < numAtts; i++) {
-        string oldName (myAtts[i].name);
-        free (myAtts[i].name);
-        string newName (prefix + "." + oldName);
-        myAtts[i].name = strdup (newName.c_str());
+Schema* Schema :: Project (NameList* attsLeft, int* &keepMe) {
+    int numAttsOutput = 0;
+    NameList *cur = attsLeft;
+    while (cur) {
+        ++numAttsOutput;
+        cur = cur->next;
     }
+    Attribute *resAtts = new Attribute[numAttsOutput];
+    keepMe = new int[numAttsOutput];
+    
+    NameList* tmpList = attsLeft;
+    
+    int i = 0;
+    while(tmpList)
+    {
+        resAtts[i].name = tmpList->name;
+        resAtts[i].myType = FindType(tmpList->name);
+        keepMe[i] = Find(tmpList->name);
+        tmpList = tmpList->next;
+        ++i;
+    }
+    
+    return new Schema("projectedSchema", numAttsOutput, resAtts);
 }
-
-void Schema :: GroupBySchema (Schema s, bool returnInt) {
-    numAtts = s.GetNumAtts () + 1;
-    if (myAtts) {
-        delete[] myAtts;
-    }
-    myAtts = new Attribute[numAtts];
-    Attribute atts[2] = {{"sum", Int}, {"sum", Double}};
-    if (returnInt) {
-        myAtts[0] = atts[0];
-    } else {
-        myAtts[0] = atts[1];
-    }
-    for (int i = 0; i < s.numAtts; i++) {
-        myAtts[i + 1] = s.myAtts[i];
-    }
-}
-
-void Schema :: ProjectSchema (Schema s, vector<string> names, vector<int> &attsToKeep) {
-    numAtts = names.size ();
-    if (myAtts) {
-        delete[] myAtts;
-    }
-    myAtts = new Attribute[numAtts];
-    for (int i = 0; i < numAtts; i++) {
-        attsToKeep.push_back (s.Find (strdup (names[i].c_str ())));
-        myAtts[i] = s.myAtts[attsToKeep.back ()];
-    }
-}
-
-void Schema :: JoinSchema (Schema left, Schema right) {
-    numAtts = left.numAtts + right.numAtts;
-    if (myAtts) {
-        delete[] myAtts;
-    }
-    myAtts = new Attribute[numAtts];
-    for (int i = 0; i < left.numAtts; i++) {
-        myAtts[i] = left.myAtts[i];
-    }
-    for (int i = 0; i < right.numAtts; i++) {
-        myAtts[left.numAtts + i] = right.myAtts[i];
-    }
-}
-
-
-Schema& Schema::operator= (const Schema& s) {
-    if (s.fileName) {
-        fileName = strdup(s.fileName);
-    }
-    numAtts = s.numAtts;
-    myAtts = new Attribute[numAtts];
-    for (int i = 0; i < numAtts; i++ ) {
-        myAtts[i] = s.myAtts[i];
-        myAtts[i].name = strdup (myAtts[i].name);
-    }
-    return *this;
-}
-
-
-Schema :: Schema () : fileName (NULL), numAtts (0), myAtts (NULL) {}

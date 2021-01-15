@@ -1,88 +1,36 @@
-#ifndef STATISTICS_H
-#define STATISTICS_H
+#ifndef STATISTICS_
+#define STATISTICS_
 #include "ParseTree.h"
-#include <map>
-#include <string>
+
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
-#include <utility>
-#include <cstring>
 #include <fstream>
 #include <iostream>
+#include <string.h>
 
-using namespace std;
-
-class AttrData;
-class RelData;
-
-typedef map<string, AttrData> AttributeMap;
-typedef map<string, RelData> RelationMap;
-
-class AttrData {
-
-public:
-
-    string attributeName;
-    int distinctValues;
-
-    AttrData ();
-    AttrData (string name, int num);
-    AttrData (const AttrData &copyMe);
-
-    AttrData &operator= (const AttrData &copyMe);
-
-};
-
-class RelData {
-
-public:
-
-    double totalTuples;
-
-    bool isJoint;		// If a relation is joint with any other relation or not
-    string relName;
-
-    AttributeMap attributeMap;		// holds all the attributes in this relation
-    map<string, string> jointRelations;		// holds which all relations this relation is joint with
-
-    RelData ();
-    RelData (string name, int tuples);
-    RelData (const RelData &copyMe);
-
-    RelData &operator= (const RelData &copyMe);
-
-    bool doesRelExist (string relName);
-
-};
-
-class Statistics {
-
+class Statistics
+{
 private:
-    double AndOp (AndList *andList, char *relName[], int numJoin);
-    double OrOp (OrList *orList, char *relName[], int numJoin);
-    double ComOp (ComparisonOp *comOp, char *relName[], int numJoin);
-    int getRelationForOp (Operand *operand, char **relName, int numJoin, RelData &relInfo);
+    std::unordered_map<std::string, int> relationsMap;
+    std::unordered_map<std::string, std::pair<std::string, int>> relAttributes;
 
 public:
-
-    RelationMap relationMap;		// Holds the relations that are currently in the statistic file.
-
-    Statistics();
+    Statistics() {};
     Statistics(Statistics &copyMe);	 // Performs deep copy
-    ~Statistics();
 
-    Statistics operator= (Statistics &copyMe);
 
-    void AddRel(char *relName, int numTuples);
-    void AddAtt(char *relName, char *attrName, int numDistincts);
-    void CopyRel(char *oldName, char *newName);
+    void setup();
 
-    void Read(char *fromWhere);
-    void Write(char *toWhere);
+    void AddRel(const char *relName, int numTuples);
+    void AddAtt(const char *relName, const char *attName, int numDistincts);
+    void CopyRel(const char *oldName, const char *newName);
+
+    void Read(const char *fromWhere);
+    void Write(const char *fromWhere);
 
     void  Apply(struct AndList *parseTree, char *relNames[], int numToJoin);
     double Estimate(struct AndList *parseTree, char **relNames, int numToJoin);
-
-    bool isRelInMap (string relName, RelData &relInfo);
 
 };
 

@@ -35,6 +35,36 @@ void yyerror(char*s);
 
 %%
 
+"CREATE"		return(CREATE);
+
+"TABLE"         return(TABLE);
+
+"ON"            return(ON);
+
+"HEAP"          return(HEAP);
+
+"SORTED"        return(SORTED);
+
+"INSERT"        return(INSERT);
+
+"INTO"          return(INTO);
+
+"DROP"          return(DROP);
+
+"SET"           return(SET);
+
+"OUTPUT"        return(OUTPUT);
+
+"STDOUT"        return(STDOUT);
+
+"NONE"          return(NONE);
+
+"UPDATE"        return(UPDATE);
+
+"STATISTICS"    return(STATISTICS);
+
+"for"			return(FOR);
+
 "SELECT"		return(SELECT);
 
 "FROM"			return(FROM);
@@ -75,21 +105,23 @@ void yyerror(char*s);
 
 ","    	        	return(',');
 
+";"    	        	return(';');
+
 -?[0-9]+ 	       {yylval.actualChars = strdup(yytext);
-  			return(Int);
+  			return(Int); 
 		        }
 
--?[0-9]+\.[0-9]*       {yylval.actualChars = strdup(yytext);
+-?[0-9]+\.[0-9]*       {yylval.actualChars = strdup(yytext); 
   			return(Float);
 			}
 
 [A-Za-z][A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
   			return(Name);
-			}
+			}     
 
 [A-Za-z][A-Za-z0-9_-]*\.[A-Za-z][A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
   			return(Name);
-			}
+			}     
 
 \'[^'\n]*\'            {/* take care of ' in a string */
                         if (yytext[yyleng - 2] == '\\') {

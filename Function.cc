@@ -200,18 +200,8 @@ void Function :: GrowFromParseTree (struct FuncOperator *parseTree, Schema &mySc
 
 }
 
-void Function :: Print () { // marker
-    const char* opNames[14] = {
-            "SumInt", "SumDouble", "ToDouble", "ToDouble2Down",
-            "IntUnaryMinus", "IntMinus", "IntPlus", "IntDivide", "IntMultiply",
-            "DoubleUnaryMinus", "DoubleMinus", "DoublePlus", "DoubleDivide", "DoubleMultiply"
-    };
-    if(!opList){
-        cout << "Uninitialized function.\n";
-        return;
-    }
-    for (int i=0; i<numOps; ++i)
-        std::cout <<"  Which attribute = " <<opList[i].recInput << " Operation name = " << opNames[opList[i].myOp] << std::endl;
+void Function :: Print () {
+
 }
 
 Type Function :: Apply (Record &toMe, int &intResult, double &doubleResult) {

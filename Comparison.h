@@ -6,7 +6,7 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
-#include <stdlib.h>
+
 
 class Schema;
 class Record;
@@ -16,7 +16,7 @@ class Comparison {
 
 	friend class ComparisonEngine;
 	friend class CNF;
-	friend class Sorted;
+    friend class Sorted;
 
 	Target operand1;
 	int whichAtt1;
@@ -37,8 +37,8 @@ public:
 	// print to the screen
 	void Print ();
 
-    void Print (Schema);
-    void Print (Schema, Record&);
+    void Print (Schema, int);
+    void Print (Schema, Record&, int );
     void printValue(int , Record &, Schema );
 };
 
@@ -50,7 +50,7 @@ class OrderMaker {
 
 	friend class ComparisonEngine;
 	friend class CNF;
-	friend class Sorted;
+    friend class Sorted;
 
 public:
 
@@ -58,6 +58,8 @@ public:
 
 	int whichAtts[MAX_ANDS];
 	Type whichTypes[MAX_ANDS];
+
+	
 
 	// creates an empty OrdermMaker
 	OrderMaker();
@@ -68,8 +70,6 @@ public:
 
 	// print to the screen
 	void Print ();
-
-    void growFromParseTree(NameList* gAtts, Schema* inputSchema); // marker
 };
 
 
@@ -80,8 +80,8 @@ public:
 class CNF {
 
 	friend class ComparisonEngine;
-	friend class Sorted;
-	
+    friend class Sorted;
+
 	Comparison orList[MAX_ANDS][MAX_ORS];
 	
 	int orLens[MAX_ANDS];
@@ -99,8 +99,9 @@ public:
 	// print the comparison structure to the screen
 	void Print ();
 
-    void Print (Schema);
-    void Print (Schema, Record&);
+    void Print (Schema, int);
+
+    void Print (Schema, Record&, int );
 
     // this takes a parse tree for a CNF and converts it into a 2-D
     // matrix storing the same CNF expression.  This function is applicable
